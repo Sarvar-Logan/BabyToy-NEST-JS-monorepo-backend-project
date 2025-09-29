@@ -1,7 +1,7 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum ProductType {
-PLAYSET = 'PLAYSET',
+ PLAYSET = 'PLAYSET',
  CONTROL = 'CONTROL', 
  EDUCATIONAL = 'EDUCATIONAL', 
  ECO_FRIENDLY = 'ECO-FRIENDLY', 

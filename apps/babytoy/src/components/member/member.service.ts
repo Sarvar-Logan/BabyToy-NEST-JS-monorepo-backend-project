@@ -25,15 +25,14 @@ export class MemberService {
   public async login(input: LoginInput): Promise<Member> {
     const { memberNick, memberPassword } = input
     const response = await this.memberModel.findOne({ memberNick: memberNick }).select("+memberPassword").exec();
-    console.log("response:", response)
     if (!response || response.memberStatus === MemberStatus.DELETE) {
       throw new InternalServerErrorException(Message.NO_MEMBER_NICK)
     } else if (response.memberStatus === MemberStatus.BLOCK) {
       throw new InternalServerErrorException(Message.BLOCKED_USER)
     }
+
+    
       // todo compare passwords
-    console.log("memberPassword:", memberPassword);
-    console.log("responsePassowrd:", response.memberPassword);
     const isMatch = memberPassword === response.memberPassword;
     if (!isMatch) {
       throw new InternalServerErrorException(Message.WRONG_PASSWORD);
