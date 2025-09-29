@@ -1,8 +1,32 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/babytoy/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/babytoy/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/babytoy",
+  "projects": {
+    "babytoy": {
+      "type": "application",
+      "root": "apps/babytoy",
+      "entryFile": "main",
+      "sourceRoot": "apps/babytoy/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/babytoy/tsconfig.app.json"
+      }
+    },
+    "babytoy-batch": {
+      "type": "application",
+      "root": "apps/babytoy-batch",
+      "entryFile": "main",
+      "sourceRoot": "apps/babytoy-batch/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/babytoy-batch/tsconfig.app.json"
+      }
+    }
   }
 }
