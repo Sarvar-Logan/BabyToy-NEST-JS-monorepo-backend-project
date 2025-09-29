@@ -1,17 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Member } from '../../libs/dto/member';
+import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { MemberStatus } from '../../libs/enums/member.enum';
+import { Message } from '../../libs/enums/common.enum';
 
 @Injectable()
 export class MemberService {
-  constructor(@InjectModel("Member") private readonly memberModel: Model<null>) { }
+  constructor(@InjectModel("Member") private readonly memberModel: Model<Member>) { }
 
-  public signup = async (): Promise<string> => {
-    return "signup Executed"
+  public async signup(input: MemberInput): Promise<Member> {
+    try {
+      // hash password
+      const result = await this.memberModel.create(input);
+      return result
+      // authentication via token 
+    } catch (err) {
+      console.log("Error, Servic.model:", err);
+      throw new BadRequestException(err);
+    }
   }
 
-  public async login(): Promise<string> {
-    return "login executed"
+  public async login(input: LoginInput): Promise<Member> {
+    const { memberNick, memberPassword } = input
+    const response = await this.memberModel.findOne({ memberNick: memberNick }).select("+memberPassword").exec();
+    console.log("response:", response)
+    if (!response || response.memberStatus === MemberStatus.DELETE) {
+      throw new InternalServerErrorException(Message.NO_MEMBER_NICK)
+    } else if (response.memberStatus === MemberStatus.BLOCK) {
+      throw new InternalServerErrorException(Message.BLOCKED_USER)
+    }
+      // todo compare passwords
+    console.log("memberPassword:", memberPassword);
+    console.log("responsePassowrd:", response.memberPassword);
+    const isMatch = memberPassword === response.memberPassword;
+    if (!isMatch) {
+      throw new InternalServerErrorException(Message.WRONG_PASSWORD);
+    }
+    return response
   }
 
 
