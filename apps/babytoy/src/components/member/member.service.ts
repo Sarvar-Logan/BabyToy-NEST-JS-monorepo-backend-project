@@ -59,4 +59,18 @@ export class MemberService {
     return "getMember executed"
   }
 
+
+
+
+  
+  // ADMIN 
+  public async getAllMemmbersByAdmin(): Promise<Member[]> {
+    const result = await this.memberModel.find()
+    return result
+  }
+ 
+ 
+  public async uptadateMemberByAdmin(): Promise<string> {
+    return "Update method executed"
+  }
 }
