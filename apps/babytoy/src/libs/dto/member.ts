@@ -94,6 +94,10 @@ export class Member {
 
   @Field(() => Date)
   updatedAt: Date;
+
+
+  @Field(() => String)
+  accessToken: string;
 }
 
 
