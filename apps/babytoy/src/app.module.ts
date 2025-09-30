@@ -17,7 +17,7 @@ import { T } from './libs/types/common';
     playground: true,
     uploads: false,
     autoSchemaFile: true,
-    formatError: (error: T) => {
+    formatError: (error: T) => {  // this is gloab error handling(don't have to use try catch in resoler)
       const graphQLFormatedError = {
         code: error?.extensions.code,
         message: error?.extensions?.exception?.response?.message || error?.extensions?.response?.message || error?.message,
