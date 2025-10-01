@@ -70,7 +70,7 @@ export class MemberService {
   }
 
 
-  public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member > {
+  public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
     const search: T = {
       _id: targetId,
       memberStatus: {
@@ -83,45 +83,67 @@ export class MemberService {
       const viewInput: ViewInput = { memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER }
       const newView = await this.viewService.recordView(viewInput)
       if (newView) {
-         await this.memberModel.findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true });
-        targetMember.memberViews ++;
+        await this.memberModel.findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true });
+        targetMember.memberViews++;
       }
+
+      // meliked
+      // mefollowed
     }
     return targetMember
   }
 
 
+public async getMembers (memberId: ObjectId, input: MembersInquiry): Promise<Members>{
+  const {text} = input.search;
+  const match : T = {memberType: MemberType.USER, memberStatus:MemberStatus.ACTIVE};
+  const sort: T = {[input?.sort ?? "createdAt"]: input?.direction ?? Direction.DESC};
+  if(text) match.memberNick = {$regex: new RegExp(text, 'i')};
+  console.log("match:", match);
 
+  const result = await this.memberModel.aggregate([
+    {$match: match},
+    {$sort: sort},
+    {
+       $facet: {
+        list: [{$skip: (input.page -1)*input.limit}, {$limit: input.limit}],
+        metaCounter: [{$count: "total"}],
+       }
+      }
+  ]).exec();
+  if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+  return result[0];
+ }
 
 
   // ADMIN 
   public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
-     const { memberType,memberStatus,text} = input.search;
-    const match : T = {};
-    const sort: T = {[input?.sort ?? "createdAt"]: input?.direction ?? Direction.DESC};
+    const { memberType, memberStatus, text } = input.search;
+    const match: T = {};
+    const sort: T = { [input?.sort ?? "createdAt"]: input?.direction ?? Direction.DESC };
     if (memberStatus) match.memberStatus = memberStatus;
     if (memberType) match.memberType = memberType;
-    if(text) match.memberNick = {$regex: new RegExp(text, 'i')};
+    if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
     console.log("match:", match);
-  
+
     const result = await this.memberModel.aggregate([
-      {$match: match},
-      {$sort: sort},
+      { $match: match },
+      { $sort: sort },
       {
-         $facet: {
-          list: [{$skip: (input.page -1)*input.limit}, {$limit: input.limit}],
-          metaCounter: [{$count: "total"}],
-         }
+        $facet: {
+          list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+          metaCounter: [{ $count: "total" }],
         }
+      }
     ]).exec();
-    if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     return result[0];
   }
 
 
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member | null> {
-        const result: Member | null = await this.memberModel.findByIdAndUpdate({_id: input._id}, input, {new: true}).exec();
-    if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    const result: Member | null = await this.memberModel.findByIdAndUpdate({ _id: input._id }, input, { new: true }).exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
   }
 }
