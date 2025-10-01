@@ -71,4 +71,15 @@ export class ProductResolver {
       console.log('Query: getAllProductsByAdmin');
       return await this.productService.getAllProductsByAdmin(input);
   }
+
+
+
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Mutation((returns) => Product)
+  public async removeProductByAdmin(@Args('productId') input: string): Promise<Product> {
+      console.log('Mutation: removeProductByAdmin');
+      const propertyId = shapeIntoMongoObjectId(input);
+    return await this.productService.removeProductByAdmin(propertyId);
+  }
 }
