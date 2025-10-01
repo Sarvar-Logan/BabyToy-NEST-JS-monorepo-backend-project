@@ -1,7 +1,7 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MemberService } from './member.service';
-import { LoginInput, MemberInput } from '../../libs/dto/member.input';
-import { Member } from '../../libs/dto/member';
+import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
+import { Member } from '../../libs/dto/member/member';
 import { InternalServerErrorException, Optional, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
@@ -9,7 +9,9 @@ import type {ObjectId} from "mongoose"
 import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { MemberUpdate } from '../../libs/dto/member.update';
+import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { WithoutGuard } from '../auth/guards/without.guard';
+import { shapeIntoMongoObjectId } from '../../libs/config';
 @Resolver()
 export class MemberResolver {
   constructor(private readonly memberService: MemberService) { }
@@ -40,11 +42,12 @@ export class MemberResolver {
 
     return this.memberService.updateMember(memberId, input);
   }
-  
-  @Query(() => String)
-  public async getMember(): Promise<string> {
+  @UseGuards(WithoutGuard)
+  @Query(() => Member)
+  public async getMember(@AuthMember('_id') memberId: ObjectId, @Args("input") refId: string): Promise<Member> {
     console.log("Query: getMember");
-    return this.memberService.getMember();
+    const targetId = shapeIntoMongoObjectId(refId);
+    return this.memberService.getMember(memberId, targetId);
   }
 
 

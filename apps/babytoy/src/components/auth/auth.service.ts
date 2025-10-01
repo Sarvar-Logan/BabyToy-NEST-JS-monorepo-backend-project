@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { genSalt } from 'bcryptjs';
 import bcrypt from 'bcryptjs';
-import { Member } from '../../libs/dto/member';
+import { Member } from '../../libs/dto/member/member';
 import { JwtService } from '@nestjs/jwt';
 import { T } from '../../libs/types/common';
 import { shapeIntoMongoObjectId } from '../../libs/config';
