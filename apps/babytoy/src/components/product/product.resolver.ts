@@ -33,7 +33,7 @@ export class ProductResolver {
   @Mutation(() => Product)
   public async updateProduct(@Args("input") input: ProductUpdate): Promise<Product> {
     input._id = shapeIntoMongoObjectId(input._id);
-    const result = await this.productService.upadateProduct(input)
+    const result = await this.productService.upadateProductByAdmin(input)
     return result
   }
  

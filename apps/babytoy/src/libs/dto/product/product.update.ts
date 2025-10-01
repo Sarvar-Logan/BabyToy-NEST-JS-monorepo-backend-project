@@ -12,11 +12,11 @@ export class ProductUpdate{
 
   @IsOptional()
   @Field(() => ProductType, {nullable: true})
-  propertyType?: ProductType;
+  productType?: ProductType;
 
   @IsOptional()
   @Field(() => ProductStatus, {nullable: true})
-  propertyStatus?: ProductStatus;
+  productStatus?: ProductStatus;
 
   @IsOptional()
   @Length(3, 100)

@@ -13,6 +13,7 @@ import { Direction, StatisticModifier, T } from '../../libs/types/common';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
 import { measureMemory } from 'vm';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import moment from 'moment';
 
 @Injectable()
 export class ProductService {
@@ -51,12 +52,18 @@ export class ProductService {
 
 
 
-  public async upadateProduct(input: ProductUpdate): Promise<Product> {
-    const targetId = input._id;
-    const result = await this.productModel.findOneAndUpdate(targetId, input, { new: true }).exec();
+  public async upadateProductByAdmin(input: ProductUpdate): Promise<Product> {
+    let {deletedAt, productStatus} = input;
+       const search: T = {
+        _id: input._id,
+        productStatus: ProductStatus.PROCESS,
+    };
+ 
+    if(productStatus === ProductStatus.DELETE) deletedAt = moment().toDate();
+ 
+    const result = await this.productModel.findOneAndUpdate(search,  input, { new: true }).exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
-
   }
 
 
