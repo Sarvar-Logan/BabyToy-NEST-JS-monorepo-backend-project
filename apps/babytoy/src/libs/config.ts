@@ -6,7 +6,7 @@ export const availableAgentSorts = ["createdAt", "updatedAt", "memberLikes", "me
 export const availableMemberSorts = ["createdAt", "updatedAt", "memberLikes", "memberViews" ];
 
 
- // IMAGE CONFIGURATION 
+ // IMAGE CONFIGURATION   // bu faqat uuid 11.0.0 pasda ishlaydi 13dan boshlab boshqa qilish kerak
  import { v4 as uuidv4 } from 'uuid';
  import * as path from 'path';
  
