@@ -5,7 +5,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { ProductInput, ProductsInquiry } from '../../libs/dto/product/proudct.input';
+import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/proudct.input';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
@@ -55,5 +55,20 @@ export class ProductResolver {
   ): Promise<Products>{
     console.log('Query: getProducts');
     return await this.productService.getProducts(memberId, input);
+  }
+
+
+
+
+  /* ADMIN */
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Query((returns) => Products)
+  public async getAllProductsByAdmin(
+      @Args('input') input: AllProductsInquiry,
+      @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Products> {
+      console.log('Query: getAllProductsByAdmin');
+      return await this.productService.getAllProductsByAdmin(input);
   }
 }

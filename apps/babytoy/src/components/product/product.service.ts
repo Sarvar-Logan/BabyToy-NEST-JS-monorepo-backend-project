@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Product, Products } from '../../libs/dto/product/product';
-import { ProductInput, ProductsInquiry } from '../../libs/dto/product/proudct.input';
+import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/proudct.input';
 import { Message } from '../../libs/enums/common.enum';
 import { ProductStatus } from '../../libs/enums/product.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
@@ -116,5 +116,39 @@ export class ProductService {
     if (productType) match.productType = { $in: productType };
     if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
     if (text) match.productName = { $regex: new RegExp(text, 'i') };
+  }
+
+
+
+
+    public async getAllProductsByAdmin(input: AllProductsInquiry): Promise<Products> {
+    const { productStatus, productTypeList } = input.search;
+    const match: T = {};
+    const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+
+    if (productStatus) match.productStatus = productStatus;
+    if (productTypeList) match.productTypeList = { $in: productTypeList };
+
+    const result = await this.productModel
+    .aggregate([
+        { $match: match },
+        { $sort: sort },
+        {
+            $facet: {
+                list: [
+                    { $skip: (input.page - 1 ) * input.limit },
+                    { $limit: input.limit },
+                    // lookupMember,
+                    // { $unwind: '$memberData' },
+                ],
+                metaCounter: [{ $count: 'total' }],
+            },
+        },
+    ])
+    .exec();
+
+    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    return result[0];
   }
 }
