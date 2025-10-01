@@ -4,7 +4,7 @@ export enum ProductType {
  PLAYSET = 'PLAYSET',
  CONTROL = 'CONTROL', 
  EDUCATIONAL = 'EDUCATIONAL', 
- ECO_FRIENDLY = 'ECO-FRIENDLY', 
+ ECO_FRIENDLY = 'ECO_FRIENDLY', 
  STUFFED = 'STUFFED',
 }
 registerEnumType(ProductType, {

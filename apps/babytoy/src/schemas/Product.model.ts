@@ -14,14 +14,20 @@ const ProductSchema = new Schema(
 			enum: ProductStatus,
 			default: ProductStatus.PROCESS,
 		},
-
-
-		productAddress: {
+	
+  
+    productName: {
 			type: String,
+			required: true
+		},
+
+
+		productPrice: {
+			type: Number,
 			required: true,
 		},
 
-		productPrice: {
+    productLeftCount: {
 			type: Number,
 			required: true,
 		},
@@ -47,29 +53,14 @@ const ProductSchema = new Schema(
 		},
 
 		productImages: {
-			type: [String],
-			required: true,
+			type: [String]
 		},
 
 		productDesc: {
 			type: String,
+      required: true
 		},
 
-		productBarter: {
-			type: Boolean,
-			default: false,
-		},
-
-		productRent: {
-			type: Boolean,
-			default: false,
-		},
-
-		memberId: {
-			type: Schema.Types.ObjectId,
-			required: true,
-			ref: 'Member',
-		},
 
 		deletedAt: {
 			type: Date,

@@ -5,6 +5,19 @@ export const availableAgentSorts = ["createdAt", "updatedAt", "memberLikes", "me
 
 export const availableMemberSorts = ["createdAt", "updatedAt", "memberLikes", "memberViews" ];
 
+export const availableProductsSorts = [
+  'createdAt',
+  'updatedAt',
+  'productLikes',
+  'productViews',
+  'productRank',
+  'productPrice',
+];
+
+
+
+
+
 
  // IMAGE CONFIGURATION   // bu faqat uuid 11.0.0 pasda ishlaydi 13dan boshlab boshqa qilish kerak
  import { v4 as uuidv4 } from 'uuid';
@@ -20,3 +33,16 @@ export const availableMemberSorts = ["createdAt", "updatedAt", "memberLikes", "m
 export const shapeIntoMongoObjectId  = (target: any) =>  {
   return typeof target === "string" ? new mongoose.Types.ObjectId(target) : target
 }
+
+
+
+
+export const lookupMember = {
+  $lookup: {
+    from: 'members',
+    localField: "memberId",
+    foreignField: "_id",
+    as: 'memberData',
+  },
+
+};
