@@ -23,21 +23,13 @@ export class ProductService {
     private viewService: ViewService,
   ) { }
 
-  public async createProduct(input: ProductInput): Promise<Product> {
-    const result = await this.productModel.create(input)
-    if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED)
-    console.log("RESULT:", result);
-    return result
-  }
 
-
-
+  // USER
   public async getProduct(targetId: ObjectId, memberId: ObjectId): Promise<Product | null> {
     const search: T = { _id: targetId, productStatus: ProductStatus.PROCESS };
 
     const targetProduct: Product | null = await this.productModel.findOne(search).lean().exec();
     if (!targetProduct) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-
     if (memberId) {
       const viewInput: ViewInput = { memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.PRODUCT };
       const newView = await this.viewService.recordView(viewInput);
@@ -51,23 +43,6 @@ export class ProductService {
   }
 
 
-
-  public async upadateProductByAdmin(input: ProductUpdate): Promise<Product> {
-    let {deletedAt, productStatus} = input;
-       const search: T = {
-        _id: input._id,
-        productStatus: ProductStatus.PROCESS,
-    };
- 
-    if(productStatus === ProductStatus.DELETE) deletedAt = moment().toDate();
- 
-    const result = await this.productModel.findOneAndUpdate(search,  input, { new: true }).exec();
-    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-    return result;
-  }
-
-
-
   public async propertyStatsEditor(input: StatisticModifier): Promise<Product | null> {
     const { _id, targetKey, modifier } = input;
     return await this.productModel.findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec();
@@ -75,8 +50,7 @@ export class ProductService {
 
 
 
-
-
+  // USER
   public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
     const match: T = { productStatus: ProductStatus.PROCESS };
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
@@ -118,7 +92,6 @@ export class ProductService {
       pricesRange,
       text,
     } = input.search;
-
     if (memberId) match.memberId = shapeIntoMongoObjectId(memberId);
     if (productType) match.productType = { $in: productType };
     if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
@@ -126,9 +99,34 @@ export class ProductService {
   }
 
 
+  // ADMIN
+  public async createProduct(input: ProductInput): Promise<Product> {
+    const result = await this.productModel.create(input)
+    if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED)
+    console.log("RESULT:", result);
+    return result
+  }
 
 
-    public async getAllProductsByAdmin(input: AllProductsInquiry): Promise<Products> {
+
+  // ADMIN
+  public async upadateProductByAdmin(input: ProductUpdate): Promise<Product> {
+    let { deletedAt, productStatus } = input;
+    const search: T = {
+      _id: input._id,
+      productStatus: ProductStatus.PROCESS,
+    };
+
+    if (productStatus === ProductStatus.DELETE) deletedAt = moment().toDate();
+
+    const result = await this.productModel.findOneAndUpdate(search, input, { new: true }).exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    return result;
+  }
+
+
+  // ADMIN
+  public async getAllProductsByAdmin(input: AllProductsInquiry): Promise<Products> {
     const { productStatus, productTypeList } = input.search;
     const match: T = {};
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
@@ -137,23 +135,22 @@ export class ProductService {
     if (productTypeList) match.productTypeList = { $in: productTypeList };
 
     const result = await this.productModel
-    .aggregate([
+      .aggregate([
         { $match: match },
         { $sort: sort },
         {
-            $facet: {
-                list: [
-                    { $skip: (input.page - 1 ) * input.limit },
-                    { $limit: input.limit },
-                    // lookupMember,
-                    // { $unwind: '$memberData' },
-                ],
-                metaCounter: [{ $count: 'total' }],
-            },
+          $facet: {
+            list: [
+              { $skip: (input.page - 1) * input.limit },
+              { $limit: input.limit },
+              // lookupMember,
+              // { $unwind: '$memberData' },
+            ],
+            metaCounter: [{ $count: 'total' }],
+          },
         },
-    ])
-    .exec();
-
+      ])
+      .exec();
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
     return result[0];
@@ -161,11 +158,11 @@ export class ProductService {
 
 
 
-
+  // ADMIN
   public async removeProductByAdmin(productId: ObjectId): Promise<Product> {
     const search: T = { _id: productId, productStatus: ProductStatus.DELETE };
     const result = await this.productModel.findOneAndDelete(search).exec();
     if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
     return result;
- }
+  }
 }

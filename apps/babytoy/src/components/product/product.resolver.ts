@@ -17,6 +17,27 @@ export class ProductResolver {
 
   constructor(private productService: ProductService) { }
 
+  // USER
+  @UseGuards(WithoutGuard)
+  @Query(() => Products)
+  public async getProducts(
+    @Args('input') input : ProductsInquiry,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Products>{
+    console.log('Query: getProducts');
+    return await this.productService.getProducts(memberId, input);
+  }
+
+  // USER
+  @UseGuards(WithoutGuard)
+  @Query(() => Product)
+  public async getProduct(@Args("productId") input: string, @AuthMember('_id') memberId: ObjectId): Promise<Product | null> {
+    const targetId = shapeIntoMongoObjectId(input);
+    const result = await this.productService.getProduct(targetId, memberId)
+    return result
+  }
+
+
   // ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
@@ -37,27 +58,6 @@ export class ProductResolver {
     return result
   }
  
-  @UseGuards(WithoutGuard)
-  @Query(() => Product)
-  public async getProduct(@Args("productId") input: string, @AuthMember('_id') memberId: ObjectId): Promise<Product | null> {
-    const targetId = shapeIntoMongoObjectId(input);
-    const result = await this.productService.getProduct(targetId, memberId)
-    return result
-  }
-
-
-
-  @UseGuards(WithoutGuard)
-  @Query(() => Products)
-  public async getProducts(
-    @Args('input') input : ProductsInquiry,
-    @AuthMember('_id') memberId: ObjectId,
-  ): Promise<Products>{
-    console.log('Query: getProducts');
-    return await this.productService.getProducts(memberId, input);
-  }
-
-
 
 
   /* ADMIN */
@@ -73,7 +73,7 @@ export class ProductResolver {
   }
 
 
-
+  // ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation((returns) => Product)
