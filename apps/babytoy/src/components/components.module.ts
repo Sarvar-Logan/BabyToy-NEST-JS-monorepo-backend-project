@@ -7,8 +7,9 @@ import { CommentModule } from './comment/comment.module';
 import { FollowModule } from './follow/follow.module';
 import { LikeModule } from './like/like.module';
 import { ViewModule } from './view/view.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
-  imports: [MemberModule, ProductModule, AuthModule, BoardArticleModule, CommentModule, FollowModule, LikeModule, ViewModule]
+  imports: [MemberModule, ProductModule, AuthModule, BoardArticleModule, CommentModule, FollowModule, LikeModule, ViewModule, OrderModule]
 })
 export class ComponentsModule {}
