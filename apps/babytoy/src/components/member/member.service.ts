@@ -97,10 +97,10 @@ export class MemberService {
         targetMember.memberViews++;
       }
 
-      // meliked++
+      // meliked++ {bitta memberni korganimda like bosdim yoq shuni bilish uchun}
       const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
       targetMember.meLiked = await this.likeService.checkLikeExistance(likeInput);
-      // mefollowed
+      // mefollowed++{memberlarni korganimda follow qildim yo  yoq shuni bilish uchun}
       targetMember.meFollowed = await this.checkSubscription(memberId, targetId)
     }
     return targetMember
@@ -126,9 +126,8 @@ export class MemberService {
           list: [
             { $skip: (input.page - 1) * input.limit },
             { $limit: input.limit },
-            // meliked++
+            // meliked++ {memberlarni korganimda like bosdim yoq shuni bilish uchun}
             lookupAuthMemberLiked(memberId),
-            //meFollowed
           ],
           metaCounter: [{ $count: "total" }],
         }

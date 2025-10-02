@@ -8,6 +8,9 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { resourceLimits } from 'worker_threads';
 import { InjectModel } from '@nestjs/mongoose';
 import { T } from '../../libs/types/common';
+import { OrdinaryInquiry } from '../../libs/dto/product/product.input';
+import { Product, Products } from '../../libs/dto/product/product';
+import { lookupVisit } from '../../libs/config';
 
 @Injectable()
 export class ViewService {
@@ -28,4 +31,42 @@ export class ViewService {
       return result
     } else return null
   }
+
+
+
+
+// VIEWGA QARAB MY PAGE DA RECENTLY VISITEDDA ISHLATILADI
+ public async getVisitedProducts(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+  const {page, limit} = input;
+  const match: T = {viewGroup: ViewGroup.PRODUCT, memberId: memberId};
+
+  const data: T = await this.viewModel.aggregate([
+  {$match: match},
+  {$sort: {updatedAt: -1}},
+  {
+    $lookup: {
+     from: "products",
+     localField: "viewRefId",
+     foreignField: "_id",
+     as: "visitedProduct",
+    },
+  },
+  {$unwind: '$visitedProduct'},
+  {
+    $facet:{
+      list: [
+        {$skip: (page-1)*limit},
+        {$limit: limit},
+        lookupVisit,
+        {$unwind: '$visitedProduct.memberData'}
+      ],
+      metaCounter: [{$count: "total"}],
+    }
+  }
+  ]).exec();
+
+  const result: Products = {list: [], metaCounter: data[0].metaCounter};
+  result.list = data[0].list.map((ele) => ele.visitedProduct);
+  return result;
+}
 }

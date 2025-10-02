@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Product, Products } from '../../libs/dto/product/product';
-import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/product.input';
+import { AllProductsInquiry, OrdinaryInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/product.input';
 import { Message } from '../../libs/enums/common.enum';
 import { ProductStatus } from '../../libs/enums/product.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
@@ -68,7 +68,7 @@ export class ProductService {
               lookupMember,
               { $unwind: '$memberData' },
               // meLiked ++
-               lookupAuthMemberLiked(memberId),
+              lookupAuthMemberLiked(memberId),
             ],
             metaCounter: [{ $count: 'total' }],
           },
@@ -118,6 +118,19 @@ export class ProductService {
     return result;
 
   }
+
+  // RECENTLY VISITED PRODCUTS
+  public async getVisited(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+    return await this.viewService.getVisitedProducts(memberId, input);
+  }
+
+
+
+  // MY FAVORITE PRODCUTS
+  public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Products> {
+    return await this.likeService.getFavoriteProducts(memberId, input);
+  }
+
 
 
 

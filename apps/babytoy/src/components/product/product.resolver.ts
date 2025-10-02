@@ -5,7 +5,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/product.input';
+import { AllProductsInquiry, OrdinaryInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/product.input';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
@@ -39,7 +39,33 @@ export class ProductResolver {
   }
 
 
-//LIKE LOGIC
+  // RECENTLY VISITED PRODCUTS
+  @UseGuards(AuthGuard)
+  @Query((returns) => Products)
+  public async getVisited(
+    @Args('input') input: OrdinaryInquiry,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Products> {
+    console.log('Query: getFavorites');
+    return await this.productService.getVisited(memberId, input);
+  }
+
+
+
+  // MY FAVORITE PRODCUTS
+  @UseGuards(AuthGuard)
+  @Query((returns) => Products)
+  public async getFavorites(
+    @Args('input') input: OrdinaryInquiry,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Products> {
+    console.log('Query: getFavorites');
+    return await this.productService.getFavorites(memberId, input);
+  }
+
+
+
+  //LIKE LOGIC
   @UseGuards(AuthGuard)
   @Mutation(() => Product)
   public async likeTargetProduct(
