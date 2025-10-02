@@ -28,22 +28,23 @@ export class OrderResolver {
 
 
 
+  //USER 
   @UseGuards(AuthGuard)
   @Query(() => Orders)
   public async getMyOrders(@Args("input") input: OrderInqury, @AuthMember('_id') memberId: ObjectId): Promise<Orders> {
-      const result = await this.orderService.getMyOrders(memberId, input);
-      return result
+    const result = await this.orderService.getMyOrders(memberId, input);
+    return result
   }
 
 
 
-   //USER 
+  //USER 
   @UseGuards(AuthGuard)
   @Mutation(() => Order)
   public async updateMyOrder(@Args("input") input: OrderUpdateInput, @AuthMember("_id") memberId: ObjectId): Promise<Order> {
     console.log("Mutation: updateMyOrder")
     input._id = shapeIntoMongoObjectId(input._id);
-    return await this.orderService.updateMyOrder( memberId, input);
+    return await this.orderService.updateMyOrder(memberId, input);
   }
 
 
@@ -52,21 +53,21 @@ export class OrderResolver {
   @UseGuards(RolesGuard)
   @Query(() => Orders)
   public async getMemberOrdersByAdmin(@Args("input") input: OrderAdminInqury): Promise<Orders> {
-      const result = await this.orderService.getMemberOrdersByAdmin(input);
-      return result
+    const result = await this.orderService.getMemberOrdersByAdmin(input);
+    return result
   }
 
-
+  //ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => Order)
   public async updateMemberOrdersByAdmin(@Args("input") input: OrderUpdateInput): Promise<Order> {
     console.log("Mutation: updateMemberOrdersByAdmin")
     input._id = shapeIntoMongoObjectId(input._id);
-    return await this.orderService.updateMemberOrdersByAdmin( input);
+    return await this.orderService.updateMemberOrdersByAdmin(input);
   }
 
-
+  //ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => Order)
