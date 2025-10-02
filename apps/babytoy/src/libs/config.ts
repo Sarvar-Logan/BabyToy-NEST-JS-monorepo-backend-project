@@ -1,8 +1,7 @@
 import mongoose, {ObjectId} from "mongoose"
 
 
-export const availableAgentSorts = ["createdAt", "updatedAt", "memberLikes", "memberViews", "memberRank" ];
-
+// GET MEMBERS, GET PRODUCT...  QUERY AGGRIGATE QILGANDA ISHLATILADI 
 export const availableMemberSorts = ["createdAt", "updatedAt", "memberLikes", "memberViews" ];
 
 export const availableProductsSorts = [
@@ -13,6 +12,9 @@ export const availableProductsSorts = [
   'productRank',
   'productPrice',
 ];
+
+
+export const availableCommentSorts = ['createdAt', 'updatedAt'];
 
 
 
@@ -31,9 +33,14 @@ import { T } from "./types/common";
  };
 
 
+
+
 export const shapeIntoMongoObjectId  = (target: any) =>  {
   return typeof target === "string" ? new mongoose.Types.ObjectId(target) : target
 }
+
+
+
 
 export const lookupAuthMemberLiked =(memberId: T, targetRefId: string = "$_id") => {
   return {
