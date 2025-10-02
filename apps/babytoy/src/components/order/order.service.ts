@@ -9,6 +9,8 @@ import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { OrderUpdateInput } from '../../libs/dto/order/order.update';
 import { OrderStatus } from '../../libs/enums/order.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
+import OrderSchema from '../../schemas/Order.model';
+import moment from 'moment';
 
 @Injectable()
 export class OrderService {
@@ -94,15 +96,15 @@ export class OrderService {
 
 
   public async updateMyOrder(id: ObjectId, input: OrderUpdateInput): Promise<Order> {
-     const orderStatus = input.orderStatus;
+    const orderStatus = input.orderStatus;
 
     const result = await this.orderModel
       .findByIdAndUpdate({ memberId: id, _id: input._id }, { orderStatus: orderStatus }, { new: true }).exec();
 
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     if (orderStatus === OrderStatus.PROCESS) {
-      const pointArgs: StatisticModifier = {_id: id, targetKey: "memberPoints", modifier: 1}
-      const memberOrdersCount: StatisticModifier = {_id: id, targetKey: "memberOrders", modifier: 1}
+      const pointArgs: StatisticModifier = { _id: id, targetKey: "memberPoints", modifier: 1 }
+      const memberOrdersCount: StatisticModifier = { _id: id, targetKey: "memberOrders", modifier: 1 }
       await this.memberService.memberStatsEditor(pointArgs);
       await this.memberService.memberStatsEditor(memberOrdersCount);
     }
@@ -119,7 +121,7 @@ export class OrderService {
   public async getMemberOrdersByAdmin(input: OrderAdminInqury): Promise<Orders> {
     const match: T = {}
     const orderStatus = input.orderStatus;
-    if(orderStatus) match.orderStatus = orderStatus;
+    if (orderStatus) match.orderStatus = orderStatus;
     const result = await this.orderModel.aggregate([
       { $match: match },
       { $sort: { updatedAt: -1 } },
@@ -158,5 +160,25 @@ export class OrderService {
     return result[0]
   };
 
+
+  //ADMIN
+  public async updateMemberOrdersByAdmin(input: OrderUpdateInput): Promise<Order> {
+    let { orderStatus } = input;
+    const result = await this.orderModel
+      .findByIdAndUpdate({ _id: input._id }, input, { new: true }).exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    return result;
+  }
+
+
+
+  //ADMIN
+  public async removeMemberOrdersByAdmin(input: ObjectId): Promise<Order> {
+    const result = await this.orderModel
+      .findByIdAndDelete({ _id: input, orderStatus: OrderStatus.DELETE }).exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    console.log("REMOVED RESULT:", result)
+    return result;
+  }
 }
 

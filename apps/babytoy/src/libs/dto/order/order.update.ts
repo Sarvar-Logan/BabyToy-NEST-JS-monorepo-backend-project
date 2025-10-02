@@ -14,4 +14,7 @@ export class OrderUpdateInput{
   @IsNotEmpty()
   @Field(() => OrderStatus)
   orderStatus: OrderStatus;
+
+  deletedAt?: Date;
+
 }
