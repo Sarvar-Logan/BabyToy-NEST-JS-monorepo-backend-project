@@ -10,7 +10,7 @@ import { Direction, StatisticModifier, T } from '../../libs/types/common';
 import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
@@ -60,7 +60,9 @@ export class BoardArticleService {
         });
         targetBoardArtcile.articleViews++;
       }
-      // meLiked
+      // meLiked++
+      const likeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
+      targetBoardArtcile.meLiked = await this.likeService.checkLikeExistance(likeInput);
     }
     targetBoardArtcile.memberData = await this.memberService.getMember(null, targetBoardArtcile.memberId);
     return targetBoardArtcile;
@@ -106,7 +108,8 @@ export class BoardArticleService {
               { $skip: (input.page - 1) * input.limit },
               { $limit: input.limit },
 
-              // meLiked
+              // meLiked++
+              lookupAuthMemberLiked(memberId),
 
               lookupMember,
               { $unwind: '$memberData' },

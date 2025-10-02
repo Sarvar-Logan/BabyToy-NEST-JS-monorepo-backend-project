@@ -12,7 +12,7 @@ import { MemberService } from '../member/member.service';
 import { Direction, StatisticModifier, T } from '../../libs/types/common';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
 import { measureMemory } from 'vm';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import moment from 'moment';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
@@ -39,7 +39,9 @@ export class ProductService {
       const newView = await this.viewService.recordView(viewInput);
       if (newView) await this.productStatsEditor({ _id: targetId, targetKey: "productViews", modifier: 1 });
       targetProduct.productViews++
-      // meLiked
+      // meLiked++
+      const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.PRODUCT };
+      targetProduct.meLiked = await this.likeService.checkLikeExistance(likeInput);
     }
     // targetProduct.memberData = await this.memberService.getMember(null, targetProduct._id)
     return targetProduct;
@@ -63,9 +65,10 @@ export class ProductService {
             list: [
               { $skip: (input.page - 1) * input.limit },
               { $limit: input.limit },
-              // meLiked
               lookupMember,
               { $unwind: '$memberData' },
+              // meLiked ++
+               lookupAuthMemberLiked(memberId),
             ],
             metaCounter: [{ $count: 'total' }],
           },

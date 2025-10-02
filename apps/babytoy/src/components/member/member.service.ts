@@ -14,11 +14,14 @@ import { ViewInput } from '../../libs/dto/view/view.input';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
+import { lookupAuthMemberLiked } from '../../libs/config';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectModel("Member") private readonly memberModel: Model<Member>,
+    @InjectModel("Follow") private readonly followModel: Model<Follower | Following>,
     private authService: AuthService,
     private viewService: ViewService,
     private likeService: LikeService,
@@ -94,10 +97,18 @@ export class MemberService {
         targetMember.memberViews++;
       }
 
-      // meliked
+      // meliked++
+      const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+      targetMember.meLiked = await this.likeService.checkLikeExistance(likeInput);
       // mefollowed
+      targetMember.meFollowed = await this.checkSubscription(memberId, targetId)
     }
     return targetMember
+  }
+
+  private async checkSubscription(followerId: ObjectId, followingId: ObjectId): Promise<MeFollowed[]> {
+    const result = await this.followModel.findOne({ followingId: followingId, followerId: followerId }).exec();
+    return result ? [{ followerId: followerId, followingId: followingId, myFollowing: true }] : [];
   }
 
   //USER
@@ -112,7 +123,13 @@ export class MemberService {
       { $sort: sort },
       {
         $facet: {
-          list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+          list: [
+            { $skip: (input.page - 1) * input.limit },
+            { $limit: input.limit },
+            // meliked++
+            lookupAuthMemberLiked(memberId),
+            //meFollowed
+          ],
           metaCounter: [{ $count: "total" }],
         }
       }
