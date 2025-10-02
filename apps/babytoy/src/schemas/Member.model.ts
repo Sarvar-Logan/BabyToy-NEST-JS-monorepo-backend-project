@@ -66,6 +66,11 @@ const MemberSchema = new Schema({
     type: Number,
     default: 0,
   },
+ 
+  memberOrders: {
+    type: Number,
+    default: 0,
+  },
 
 
   memberFollowers: {

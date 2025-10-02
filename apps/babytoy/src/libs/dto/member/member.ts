@@ -77,6 +77,9 @@ export class Member {
   @Field(() => Int)
   memberRank: number;
 
+  @Field(() => Int)
+  memberOrders: number;
+
 
   @Field(() => Int)
   memberWarnings: number;

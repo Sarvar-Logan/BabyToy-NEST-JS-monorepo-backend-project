@@ -69,7 +69,7 @@ export class Order {
   @Field(() => [Product], { nullable: true })
   productData?: Product[];
 
-  @Field(() => Members, { nullable: true })
+  @Field(() => Member, { nullable: true })
   memberData?: Member;
  
   @Field(() => [OrderItem], { nullable: true })

@@ -1,5 +1,5 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
-import { ArrayMinSize, IsNotEmpty, isNotEmpty, Length, Min, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsNotEmpty, isNotEmpty, IsOptional, Length, Min, ValidateNested } from "class-validator";
 import type { ObjectId } from "mongoose";
 import { OrderStatus } from "../../enums/order.enum";
 import { Type } from "class-transformer";
@@ -58,5 +58,24 @@ export class OrderInqury {
   @IsNotEmpty()
   @Field(() => OrderStatus)
   orderStatus: OrderStatus;
+
+}
+@InputType()
+export class OrderAdminInqury {
+  @IsNotEmpty()
+  @Min(1)
+  @Field(() => Int)
+  page: number;
+
+
+  @IsNotEmpty()
+  @Min(1)
+  @Field(() => Int)
+  limit: number
+
+
+  @IsOptional()
+  @Field(() => OrderStatus, {nullable: true})
+  orderStatus?: OrderStatus;
 
 }

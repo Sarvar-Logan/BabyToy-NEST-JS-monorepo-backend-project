@@ -2,12 +2,15 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { OrderService } from './order.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { Order, OrderItem, Orders } from '../../libs/dto/order/order';
-import { OrderInput, OrderInqury, OrderItemInput } from '../../libs/dto/order/order.input';
+import { OrderAdminInqury, OrderInput, OrderInqury, OrderItemInput } from '../../libs/dto/order/order.input';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import type { ObjectId } from 'mongoose';
 import { UseGuards } from '@nestjs/common';
 import { OrderUpdateInput } from '../../libs/dto/order/order.update';
 import { shapeIntoMongoObjectId } from '../../libs/config';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { MemberType } from '../../libs/enums/member.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class OrderResolver {
@@ -42,4 +45,18 @@ export class OrderResolver {
     input._id = shapeIntoMongoObjectId(input._id);
     return await this.orderService.updateMyOrder( memberId, input);
   }
+
+
+  //ADMIN
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Query(() => Orders)
+  public async getMemberOrdersByAdmin(@Args("input") input: OrderAdminInqury): Promise<Orders> {
+      const result = await this.orderService.getMemberOrdersByAdmin(input);
+      return result
+  }
 }
+
+
+
+
