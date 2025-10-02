@@ -14,6 +14,9 @@ import { ProductUpdate } from '../../libs/dto/product/product.update';
 import { measureMemory } from 'vm';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import moment from 'moment';
+import { LikeService } from '../like/like.service';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
 
 @Injectable()
 export class ProductService {
@@ -21,20 +24,20 @@ export class ProductService {
     @InjectModel("Product") private readonly productModel: Model<Product>,
     private memberService: MemberService,
     private viewService: ViewService,
+    private likeService: LikeService,
+
   ) { }
 
 
   // USER
   public async getProduct(targetId: ObjectId, memberId: ObjectId): Promise<Product | null> {
     const search: T = { _id: targetId, productStatus: ProductStatus.PROCESS };
-
     const targetProduct: Product | null = await this.productModel.findOne(search).lean().exec();
     if (!targetProduct) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     if (memberId) {
       const viewInput: ViewInput = { memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.PRODUCT };
       const newView = await this.viewService.recordView(viewInput);
-
-      if (newView) await this.propertyStatsEditor({ _id: targetId, targetKey: "productViews", modifier: 1 });
+      if (newView) await this.productStatsEditor({ _id: targetId, targetKey: "productViews", modifier: 1 });
       targetProduct.productViews++
       // meLiked
     }
@@ -43,21 +46,14 @@ export class ProductService {
   }
 
 
-  public async propertyStatsEditor(input: StatisticModifier): Promise<Product | null> {
-    const { _id, targetKey, modifier } = input;
-    return await this.productModel.findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec();
-  }
-
 
 
   // USER
   public async getProducts(memberId: ObjectId, input: ProductsInquiry): Promise<Products> {
     const match: T = { productStatus: ProductStatus.PROCESS };
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-
     this.shapeMatchQuery(match, input);
     console.log('match:', match);
-
     const result = await this.productModel
       .aggregate([
         { $match: match },
@@ -68,9 +64,8 @@ export class ProductService {
               { $skip: (input.page - 1) * input.limit },
               { $limit: input.limit },
               // meLiked
-
-              // lookupMember,
-              // { $unwind: '$memberData' },
+              lookupMember,
+              { $unwind: '$memberData' },
             ],
             metaCounter: [{ $count: 'total' }],
           },
@@ -80,7 +75,6 @@ export class ProductService {
 
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     console.log('RESULT:', result);
-
     return result[0];
   }
 
@@ -97,6 +91,34 @@ export class ProductService {
     if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
     if (text) match.productName = { $regex: new RegExp(text, 'i') };
   }
+
+
+
+
+
+
+  // LIKE LOGIC
+  public async likeTargetProduct(memberId: ObjectId, likeRefId: ObjectId): Promise<Product> {
+    const target: Product = await this.productModel.findOne({ _id: likeRefId, productStatus: ProductStatus.PROCESS }).exec();
+    if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    const input: LikeInput = {
+      memberId: memberId,
+      likeRefId: likeRefId,
+      likeGroup: LikeGroup.PRODUCT
+    };
+
+    const modifier: number = await this.likeService.toggleLike(input);
+    const result = await this.productStatsEditor({ _id: likeRefId, targetKey: "productLikes", modifier: modifier });
+
+    if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+    return result;
+
+  }
+
+
+
+
 
 
   // ADMIN
@@ -116,9 +138,7 @@ export class ProductService {
       _id: input._id,
       productStatus: ProductStatus.PROCESS,
     };
-
     if (productStatus === ProductStatus.DELETE) deletedAt = moment().toDate();
-
     const result = await this.productModel.findOneAndUpdate(search, input, { new: true }).exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
@@ -130,10 +150,8 @@ export class ProductService {
     const { productStatus, productType } = input.search;
     const match: T = {};
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-
     if (productStatus) match.productStatus = productStatus;
     if (productType) match.productTypeList = { $in: productType };
-
     const result = await this.productModel
       .aggregate([
         { $match: match },
@@ -152,7 +170,6 @@ export class ProductService {
       ])
       .exec();
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-
     return result[0];
   }
 
@@ -164,5 +181,13 @@ export class ProductService {
     const result = await this.productModel.findOneAndDelete(search).exec();
     if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
     return result;
+  }
+
+
+
+
+  public async productStatsEditor(input: StatisticModifier): Promise<Product | null> {
+    const { _id, targetKey, modifier } = input;
+    return await this.productModel.findOneAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec();
   }
 }

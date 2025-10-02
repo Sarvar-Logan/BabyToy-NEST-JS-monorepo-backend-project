@@ -11,6 +11,7 @@ import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import type { ObjectId } from 'mongoose';
 import { ProductUpdate } from '../../libs/dto/product/product.update';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver()
 export class ProductResolver {
@@ -21,9 +22,9 @@ export class ProductResolver {
   @UseGuards(WithoutGuard)
   @Query(() => Products)
   public async getProducts(
-    @Args('input') input : ProductsInquiry,
+    @Args('input') input: ProductsInquiry,
     @AuthMember('_id') memberId: ObjectId,
-  ): Promise<Products>{
+  ): Promise<Products> {
     console.log('Query: getProducts');
     return await this.productService.getProducts(memberId, input);
   }
@@ -38,6 +39,19 @@ export class ProductResolver {
   }
 
 
+//LIKE LOGIC
+  @UseGuards(AuthGuard)
+  @Mutation(() => Product)
+  public async likeTargetProduct(
+    @Args("productId") input: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Product> {
+    console.log("Mutation: likeTargetProperty");
+    const likeRefId = shapeIntoMongoObjectId(input);
+    return await this.productService.likeTargetProduct(memberId, likeRefId);
+  }
+
+
   // ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
@@ -46,9 +60,9 @@ export class ProductResolver {
     const result = await this.productService.createProduct(input)
     return result
   }
- 
- 
-   // ADMIN
+
+
+  // ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => Product)
@@ -57,7 +71,7 @@ export class ProductResolver {
     const result = await this.productService.upadateProductByAdmin(input)
     return result
   }
- 
+
 
 
   /* ADMIN */
@@ -65,11 +79,11 @@ export class ProductResolver {
   @UseGuards(RolesGuard)
   @Query((returns) => Products)
   public async getAllProductsByAdmin(
-      @Args('input') input: AllProductsInquiry,
-      @AuthMember('_id') memberId: ObjectId,
+    @Args('input') input: AllProductsInquiry,
+    @AuthMember('_id') memberId: ObjectId,
   ): Promise<Products> {
-      console.log('Query: getAllProductsByAdmin');
-      return await this.productService.getAllProductsByAdmin(input);
+    console.log('Query: getAllProductsByAdmin');
+    return await this.productService.getAllProductsByAdmin(input);
   }
 
 
@@ -78,8 +92,8 @@ export class ProductResolver {
   @UseGuards(RolesGuard)
   @Mutation(() => Product)
   public async removeProductByAdmin(@Args('productId') input: string): Promise<Product> {
-      console.log('Mutation: removeProductByAdmin');
-      const productId = shapeIntoMongoObjectId(input);
+    console.log('Mutation: removeProductByAdmin');
+    const productId = shapeIntoMongoObjectId(input);
     return await this.productService.removeProductByAdmin(productId);
   }
 }

@@ -18,6 +18,7 @@ export class BoardArticleResolver {
   constructor(private readonly boardArticleService: BoardArticleService) { }
 
 
+  //USER
   @UseGuards(AuthGuard)
   @Mutation((returns) => BoardArticle)
   public async createBoardArticle(
@@ -28,6 +29,7 @@ export class BoardArticleResolver {
     return await this.boardArticleService.createBoardArticle(memberId, input);
   }
 
+  //USER
   @UseGuards(WithoutGuard)
   @Query((returns) => BoardArticle)
   public async getBoardArticle(
@@ -39,6 +41,9 @@ export class BoardArticleResolver {
     return await this.boardArticleService.getBoardArticle(memberId, articleId);
   }
 
+
+
+  //USER
   @UseGuards(AuthGuard)
   @Mutation(() => BoardArticle)
   public async updateBoardArticle(
@@ -49,7 +54,9 @@ export class BoardArticleResolver {
     input._id = shapeIntoMongoObjectId(input._id);
     return await this.boardArticleService.updateBoardArticle(memberId, input);
   }
-
+  
+  
+  //USER
   @UseGuards(WithoutGuard)
   @Query((returns) => BoardArticles)
   public async getBoardArticles(
@@ -63,7 +70,20 @@ export class BoardArticleResolver {
 
 
 
-  /** ADMIN **/
+  @UseGuards(AuthGuard)
+  @Mutation(() => BoardArticle)
+  public async likeTargetBoardArticle(
+    @Args("articleId") input: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<BoardArticle> {
+    console.log("Mutation: likeTargetBoardArticle");
+    const likeRefId = shapeIntoMongoObjectId(input);
+    return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId);
+  }
+
+
+
+  // ADMIN 
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Query((returns) => BoardArticles)
@@ -75,6 +95,9 @@ export class BoardArticleResolver {
     return await this.boardArticleService.getAllBoardArticlesByAdmin(input);
   }
 
+
+
+  // ADMIN 
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation(() => BoardArticle)
@@ -87,6 +110,8 @@ export class BoardArticleResolver {
     return await this.boardArticleService.updateBoardArticleByAdmin(input);
   }
 
+
+  // ADMIN 
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation((returns) => BoardArticle)

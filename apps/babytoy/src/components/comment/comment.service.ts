@@ -27,7 +27,6 @@ export class CommentService {
 // USER
   public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
   input.memberId = memberId;
-
   let result = null;
   try {
       result = await this.commentModel.create(input);
@@ -38,7 +37,7 @@ export class CommentService {
 
   switch (input.commentGroup) {
       case CommentGroup.PRODUCT:
-          await this.productService.propertyStatsEditor({
+          await this.productService.productStatsEditor({
               _id: input.commentRefId,
               targetKey: 'propertyComments',
               modifier: 1,
@@ -59,7 +58,6 @@ export class CommentService {
           });
       break;
   }
-
   if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);
 
   return result;
@@ -91,7 +89,6 @@ public async getComments(memberId: ObjectId, input: CommentsInquiry): Promise<Co
     const { commentRefId } = input.search;
     const match: T = { commentRefId: commentRefId, commentStatus: CommentStatus.ACTIVE };
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-
     const result: Comments[] = await this.commentModel.aggregate([
         { $match: match },
         { $sort: sort },
@@ -110,9 +107,7 @@ public async getComments(memberId: ObjectId, input: CommentsInquiry): Promise<Co
             },
         },
     ]);
-
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-
     return result[0];
 }
 

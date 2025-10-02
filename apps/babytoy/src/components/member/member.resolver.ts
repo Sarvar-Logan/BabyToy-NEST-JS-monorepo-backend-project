@@ -2,7 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { MemberService } from './member.service';
 import { LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { Member, Members } from '../../libs/dto/member/member';
-import { InternalServerErrorException, Optional, UseGuards } from '@nestjs/common';
+import {  UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import type { ObjectId } from "mongoose"
@@ -15,6 +15,9 @@ import { GraphQLUpload, FileUpload } from 'graphql-upload';
 import { getSerialForImage, shapeIntoMongoObjectId, validMimeTypes } from '../../libs/config';
 import { Message } from '../../libs/enums/common.enum';
 import { createWriteStream } from 'fs';
+
+
+
 @Resolver()
 export class MemberResolver {
   constructor(private readonly memberService: MemberService) { }
@@ -32,7 +35,7 @@ export class MemberResolver {
     return this.memberService.login(input);
   }
 
-  
+
   // USER
   @UseGuards(AuthGuard)
   @Mutation(() => Member)
@@ -60,6 +63,17 @@ export class MemberResolver {
     return await this.memberService.getMembers(memberId, input);
   }
 
+  // LIKE LOGIC
+  @UseGuards(AuthGuard)
+  @Mutation(() => Member)
+  public async likeTargetMember(
+    @Args("memberId") input: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<Member> {
+    console.log("Mutation: likeTargetMember");
+    const likeRefId = shapeIntoMongoObjectId(input);
+    return await this.memberService.likeTargetMember(memberId, likeRefId);
+  }
 
   // for test
   @UseGuards(AuthGuard)
