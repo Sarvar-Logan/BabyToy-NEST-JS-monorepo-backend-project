@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Product, Products } from '../../libs/dto/product/product';
-import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/proudct.input';
+import { AllProductsInquiry, ProductInput, ProductsInquiry } from '../../libs/dto/product/product.input';
 import { Message } from '../../libs/enums/common.enum';
 import { ProductStatus } from '../../libs/enums/product.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
@@ -127,12 +127,12 @@ export class ProductService {
 
   // ADMIN
   public async getAllProductsByAdmin(input: AllProductsInquiry): Promise<Products> {
-    const { productStatus, productTypeList } = input.search;
+    const { productStatus, productType } = input.search;
     const match: T = {};
     const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
     if (productStatus) match.productStatus = productStatus;
-    if (productTypeList) match.productTypeList = { $in: productTypeList };
+    if (productType) match.productTypeList = { $in: productType };
 
     const result = await this.productModel
       .aggregate([

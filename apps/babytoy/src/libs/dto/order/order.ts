@@ -3,7 +3,7 @@ import { IsNotEmpty, isNotEmpty, Length, Min } from "class-validator";
 import type { ObjectId } from "mongoose";
 import { OrderStatus } from "../../enums/order.enum";
 import { Product } from "../product/product";
-import { TotalCounter } from "../member/member";
+import { Member, Members, TotalCounter } from "../member/member";
 
 @ObjectType()
 export class OrderItem {
@@ -31,6 +31,10 @@ export class OrderItem {
 
   @Field(() => Date)
   updatedAt?: Date;
+
+  // @Field(() => Product, { nullable: true })
+  // productData?: Product;   // ⚡ endi array emas, obyekt
+
 }
 
 
@@ -61,25 +65,33 @@ export class Order {
   updatedAt?: Date;
 
 
+  //from aggregation\
+  @Field(() => [Product], { nullable: true })
+  productData?: Product[];
+
+  @Field(() => Members, { nullable: true })
+  memberData?: Member;
+ 
+  @Field(() => [OrderItem], { nullable: true })
+  orderItems?: OrderItem[];
 }
 
 
-// from aggregation
 @ObjectType()
 export class Orders {
-    @Field(() => [OrderItem])
-    list: OrderItem[];
+  @Field(() => [Order])
+  list: Order[];
 
-    @Field(() => [TotalCounter], { nullable: true })
-    metaCounter: TotalCounter[];
+  @Field(() => [TotalCounter], { nullable: true })
+  metaCounter: TotalCounter[];
 }
 
 
 @ObjectType()
 export class Products {
-    @Field(() => [Product])
-    list: Product[];
+  @Field(() => [Product])
+  list: Product[];
 
-    @Field(() => [TotalCounter], { nullable: true })
-    metaCounter: TotalCounter[];
+  @Field(() => [TotalCounter], { nullable: true })
+  metaCounter: TotalCounter[];
 }

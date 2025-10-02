@@ -14,9 +14,6 @@ export class ProductInput{
 @Field(() => ProductType)
 productType: ProductType;
 
-
-
-
 @IsNotEmpty()
 @Length(3, 20)
 @Field(() => String)
@@ -46,8 +43,6 @@ productDesc: string;
 @IsOptional()
 @Field(() => ProductStatus, {nullable: true})
 productStatus?: ProductStatus;
-
-
 }
 
 
@@ -68,23 +63,19 @@ export class PricesRange{
 class PISearch {
   @IsOptional()
   @Field(() => String, { nullable: true })
-  memberId?: ObjectId;
+  memberId?: ObjectId;  // biz like yoki follow qilganimizni tekshirish
 
   @IsOptional()
   @Field(() => [ProductType], { nullable: true })
-  productType?: ProductType[];
-
-  @IsOptional()
-  @Field(() => [Int], { nullable: true })
-  bedsList?: Number[];
+  productType?: ProductType[]; // type Boyicha filter
 
   @IsOptional()
   @Field(() => PricesRange, { nullable: true })
-  pricesRange?: PricesRange;
+  pricesRange?: PricesRange; // narx boyicha
 
   @IsOptional()
   @Field(() => String, { nullable: true })
-  text?: string;
+  text?: string;  // poiskga yozish 
 }
 
 
@@ -126,7 +117,7 @@ export class ALPISearch {
 
     @IsOptional()
     @Field(() => [ProductType], { nullable: true })
-    productTypeList?: ProductType[];
+    productType?: ProductType[];
 }
 
 
