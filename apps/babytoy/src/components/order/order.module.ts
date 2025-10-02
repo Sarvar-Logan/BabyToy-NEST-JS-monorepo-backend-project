@@ -7,12 +7,15 @@ import { OrderItem } from '../../libs/dto/order/order';
 import orderItemSchema from '../../schemas/OrderItem.model';
 import OrderSchema from '../../schemas/Order.model';
 import OrderItemSchema from '../../schemas/OrderItem.model';
+import { AuthModule } from '../auth/auth.module';
+import { MemberModule } from '../member/member.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: "Order", schema: OrderSchema}]), 
-    MongooseModule.forFeature([{name: "OrderItem", schema: OrderItemSchema}])
-],
+    MongooseModule.forFeature([{ name: "Order", schema: OrderSchema }, { name: "OrderItem", schema: OrderItemSchema }]),
+    AuthModule,
+    MemberModule
+  ],
   providers: [OrderResolver, OrderService]
 })
-export class OrderModule {}
+export class OrderModule { }

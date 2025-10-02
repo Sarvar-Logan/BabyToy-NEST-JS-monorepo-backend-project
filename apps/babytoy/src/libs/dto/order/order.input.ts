@@ -1,7 +1,8 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
-import { IsNotEmpty, isNotEmpty, Length, Min } from "class-validator";
+import { ArrayMinSize, IsNotEmpty, isNotEmpty, Length, Min, ValidateNested } from "class-validator";
 import type { ObjectId } from "mongoose";
 import { OrderStatus } from "../../enums/order.enum";
+import { Type } from "class-transformer";
 
 @InputType()
 export class OrderItemInput {
@@ -29,9 +30,19 @@ export class OrderItemInput {
 }
 
 
+@InputType()
+export class OrderInput {
+  @Type(() => OrderItemInput)   // array ichidagi elementlarni OrderItemInput ga map qiladi
+  @ArrayMinSize(1)
+  @Field(() => [OrderItemInput])
+  orderInput: OrderItemInput[]
+}
+
+
+
 
 @InputType()
-export class OderInqury {
+export class OrderInqury {
   @IsNotEmpty()
   @Min(1)
   @Field(() => Int)

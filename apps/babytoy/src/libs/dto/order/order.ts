@@ -66,7 +66,7 @@ export class Order {
 
 // from aggregation
 @ObjectType()
-export class OrderItems {
+export class Orders {
     @Field(() => [OrderItem])
     list: OrderItem[];
 

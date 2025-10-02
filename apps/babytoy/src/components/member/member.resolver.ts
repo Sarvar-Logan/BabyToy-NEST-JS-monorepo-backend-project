@@ -41,7 +41,6 @@ export class MemberResolver {
     @AuthMember('_id') memberId: ObjectId
   ): Promise<Member | null> {
     console.log("Mutation: updateMember");
-    console.log("ID:", memberId)
     delete (input as any)._id;
     return this.memberService.updateMember(memberId, input);
   }

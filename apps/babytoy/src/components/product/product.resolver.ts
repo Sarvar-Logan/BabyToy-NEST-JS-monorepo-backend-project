@@ -15,7 +15,7 @@ import { ProductUpdate } from '../../libs/dto/product/product.update';
 @Resolver()
 export class ProductResolver {
 
-  constructor(private productService: ProductService) { }
+  constructor(private readonly productService: ProductService) { }
 
   // USER
   @UseGuards(WithoutGuard)
