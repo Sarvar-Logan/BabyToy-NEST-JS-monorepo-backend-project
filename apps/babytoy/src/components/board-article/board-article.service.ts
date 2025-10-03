@@ -61,10 +61,10 @@ export class BoardArticleService {
         targetBoardArtcile.articleViews++;
       }
       // meLiked++
+      targetBoardArtcile.memberData = await this.memberService.getMember(null, targetBoardArtcile.memberId);
       const likeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
       targetBoardArtcile.meLiked = await this.likeService.checkLikeExistance(likeInput);
     }
-    targetBoardArtcile.memberData = await this.memberService.getMember(null, targetBoardArtcile.memberId);
     return targetBoardArtcile;
   }
 

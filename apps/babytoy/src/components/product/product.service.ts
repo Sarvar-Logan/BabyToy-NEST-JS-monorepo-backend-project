@@ -39,11 +39,16 @@ export class ProductService {
       const newView = await this.viewService.recordView(viewInput);
       if (newView) await this.productStatsEditor({ _id: targetId, targetKey: "productViews", modifier: 1 });
       targetProduct.productViews++
+      
+      //owner of this product--
+      /* targetProduct.memberData = await this.memberService.getMember(null, targetProduct._id)
+         --- agar product kimga tegishli data kerak  bolsa bu yerda kerak emas ---
+       */
+      
       // meLiked++
       const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.PRODUCT };
       targetProduct.meLiked = await this.likeService.checkLikeExistance(likeInput);
     }
-    // targetProduct.memberData = await this.memberService.getMember(null, targetProduct._id)
     return targetProduct;
   }
 
@@ -65,9 +70,12 @@ export class ProductService {
             list: [
               { $skip: (input.page - 1) * input.limit },
               { $limit: input.limit },
-              lookupMember,
-              { $unwind: '$memberData' },
+
+              // owners of Products
+              // lookupMember,
+              // { $unwind: '$memberData' },
               // meLiked ++
+              
               lookupAuthMemberLiked(memberId),
             ],
             metaCounter: [{ $count: 'total' }],
@@ -90,7 +98,7 @@ export class ProductService {
       text,
     } = input.search;
     if (memberId) match.memberId = shapeIntoMongoObjectId(memberId);
-    if (productType) match.productType = { $in: productType };
+    if (productType && productType.length) match.productType = { $in: productType };
     if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
     if (text) match.productName = { $regex: new RegExp(text, 'i') };
   }
