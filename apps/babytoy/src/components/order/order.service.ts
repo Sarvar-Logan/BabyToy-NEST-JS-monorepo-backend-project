@@ -11,6 +11,7 @@ import { OrderStatus } from '../../libs/enums/order.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import OrderSchema from '../../schemas/Order.model';
 import moment from 'moment';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -18,7 +19,8 @@ export class OrderService {
   constructor(
     @InjectModel("Order") private readonly orderModel: Model<Order>,
     @InjectModel("OrderItem") private readonly orderItemModel: Model<OrderItem>,
-    private memberService: MemberService
+    private memberService: MemberService,
+    private productService: ProductService,
   ) { }
 
 
@@ -98,15 +100,30 @@ export class OrderService {
   public async updateMyOrder(id: ObjectId, input: OrderUpdateInput): Promise<Order> {
     const orderStatus = input.orderStatus;
 
+
     const result = await this.orderModel
       .findByIdAndUpdate({ memberId: id, _id: input._id }, { orderStatus: orderStatus }, { new: true }).exec();
 
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     if (orderStatus === OrderStatus.PROCESS) {
-      const pointArgs: StatisticModifier = { _id: id, targetKey: "memberPoints", modifier: 1 }
-      const memberOrdersCount: StatisticModifier = { _id: id, targetKey: "memberOrders", modifier: 1 }
+      const pointArgs: StatisticModifier = { _id: id, targetKey: "memberPoints", modifier: 1 };
+      const memberOrdersCount: StatisticModifier = { _id: id, targetKey: "memberOrders", modifier: 1 };
       await this.memberService.memberStatsEditor(pointArgs);
       await this.memberService.memberStatsEditor(memberOrdersCount);
+
+      const orderItems = await this.orderItemModel.find({ orderId: input._id }).exec();
+      for (const item of orderItems) {
+        const productSaleCount: StatisticModifier = {
+          _id: item.productId,
+          targetKey: "productSaleCount",
+          modifier: 1
+        };
+        await this.productService.productStatsEditor(productSaleCount);
+      }
+
+
+      const productSaleCount: StatisticModifier = { _id: id, targetKey: "productSaleCount", modifier: 1 };
+      await this.productService.productStatsEditor(productSaleCount);
     }
     return result;
   }

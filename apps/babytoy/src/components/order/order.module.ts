@@ -9,12 +9,15 @@ import OrderSchema from '../../schemas/Order.model';
 import OrderItemSchema from '../../schemas/OrderItem.model';
 import { AuthModule } from '../auth/auth.module';
 import { MemberModule } from '../member/member.module';
+import { ProductModule } from '../product/product.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: "Order", schema: OrderSchema }, { name: "OrderItem", schema: OrderItemSchema }]),
     AuthModule,
-    MemberModule
+    MemberModule,
+    ProductModule
+
   ],
   providers: [OrderResolver, OrderService]
 })

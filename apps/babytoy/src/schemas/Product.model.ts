@@ -46,6 +46,11 @@ const ProductSchema = new Schema(
 			type: Number,
 			default: 0,
 		},
+	
+    productSaleCount: {
+			type: Number,
+			default: 0,
+		},
 
 		productRank: {
 			type: Number,

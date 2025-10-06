@@ -11,6 +11,7 @@ export const availableProductsSorts = [
   'productViews',
   'productRank',
   'productPrice',
+  'productSaleCount',
 ];
 
 

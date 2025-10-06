@@ -34,6 +34,9 @@ export class Product {
 
   @Field(() => Int)
   productRank: number;
+  
+  @Field(() => Int)
+  productSaleCount: number;
 
   @Field(() => [String], { nullable: true })
   productImages?: string[];
